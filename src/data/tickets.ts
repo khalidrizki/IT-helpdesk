@@ -1,0 +1,51 @@
+import type { Ticket } from '@/types/ticket'
+
+export const ticketData: Ticket[] = [
+  {
+    id: 1,
+    title: 'Can not access email',
+    requester: 'John',
+    requesterEmail: 'john123@burgershop.com',
+    assignee: 'Will',
+    category: 'Software',
+    status: 'Open',
+    priority: 'High',
+    description: 'Been trying to access sales@burgershop.com to no avail.',
+  },
+  {
+    id: 2,
+    title: 'Printer not working',
+    requester: 'Jane',
+    requesterEmail: 'Jane45@burgershop.com',
+    assignee: null,
+    category: 'Hardware',
+    status: 'Open',
+    priority: 'Medium',
+    description:
+      'The printer on second floor keeps on making sound and keeps stop printing midway.',
+    affectedAsset: 'HP LaserJet Pro M404dn',
+  },
+  {
+    id: 3,
+    title: 'VPN issue',
+    requester: 'James',
+    requesterEmail: 'James67@burgershop.com',
+    assignee: 'David',
+    category: 'Network',
+    status: 'Closed',
+    priority: 'Medium',
+    description: "Can't access the company VPN for the last 1 hour.",
+    affectedAsset: 'Lenovo ThinkPad T14',
+  },
+  {
+    id: 4,
+    title: 'Storage corruption',
+    requester: 'Anna',
+    requesterEmail: 'Anna089@burgershop.com',
+    assignee: 'Frank',
+    category: 'Data',
+    status: 'Open',
+    priority: 'High',
+    description: 'The inventory data seems to not be accessible.',
+  },
+]
