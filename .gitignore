@@ -37,3 +37,28 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# BACK-END
+# Go build artifacts
+/backend/**/bin/
+/backend/**/tmp/
+*.exe
+*.test
+coverage.out
+coverage.html
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local PostgreSQL data directories
+/postgres-data/
+/pgdata/
+/backend/**/postgres-data/
+/backend/**/pgdata/
+
+# Local database backups
+*.dump
+*.backup
+*.sql.gz
