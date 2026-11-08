@@ -8,7 +8,7 @@ const password = ref<string | null>(null)
 const confirmPassword = ref<string | null>(null)
 
 const isRegistered = ref(false)
-function registerUser() {
+async function registerUser() {
   const missingFields: string[] = []
 
   if (!name.value) {
@@ -40,7 +40,34 @@ function registerUser() {
     alert(`Make sure Password and Confirmed Password are the same`)
     return
   }
-  isRegistered.value = true
+
+  try {
+    const response = await fetch('/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: name.value,
+        email: email.value,
+        department_id: Number(department.value),
+        password: password.value,
+        confirm_password: confirmPassword.value,
+      }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Registration failed')
+    }
+
+    isRegistered.value = true
+    alert(result.message)
+
+  } catch (error) {
+    alert(error instanceof Error ? error.message : 'Something went wrong')
+  }
 }
 
 function moveToLogin() {
@@ -88,18 +115,18 @@ function moveToLogin() {
               <label>Department</label>
 
               <select class="w-full rounded-sm border px-4 py-2" v-model="department">
-                <option value="business-development">Business Development</option>
-                <option value="customer-service">Customer Service</option>
-                <option value="finance-accounting">Finance & Accounting</option>
-                <option value="human-resources">Human Resources (HR)</option>
-                <option value="it">IT</option>
-                <option value="legal-compliance">Legal & Compliance</option>
-                <option value="logistics">Logistics</option>
-                <option value="management">Management</option>
-                <option value="marketing">Marketing</option>
-                <option value="operations">Operations</option>
-                <option value="procurement">Procurement</option>
-                <option value="sales">Sales</option>
+                <option value="1">Business Development</option>
+                <option value="2">Customer Service</option>
+                <option value="3">Finance & Accounting</option>
+                <option value="4">Human Resources (HR)</option>
+                <option value="5">IT</option>
+                <option value="6">Legal & Compliance</option>
+                <option value="7">Logistics</option>
+                <option value="8">Management</option>
+                <option value="9">Marketing</option>
+                <option value="10">Operations</option>
+                <option value="11">Procurement</option>
+                <option value="12">Sales</option>
               </select>
             </div>
 
