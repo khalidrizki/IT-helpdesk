@@ -17,20 +17,21 @@ const router = createRouter({
     {
       path: '/',
       component: MainLayout,
+      redirect: '/dashboard',
       children: [
         { path: '/dashboard', name: 'dashboard', component: DashboardView },
         {
-          path: '/tickets',
+          path: 'tickets',
           name: 'tickets',
           component: TicketsView,
         },
         {
-          path: '/create',
+          path: 'create',
           name: 'create',
           component: CreateTicketView,
         },
         {
-          path: '/accounts',
+          path: 'accounts',
           name: 'accounts',
           component: AccountsView,
         },
