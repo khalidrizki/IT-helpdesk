@@ -8,23 +8,29 @@ import (
 )
 
 func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20) // body dibatasi max. 1 MiB
+	w.Header().Set("Content-Type", "application/json")
+
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
 	var reqData account.RegisterInput
 
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "invalid request body",
+		})
 		return
 	}
 
 	err := s.accountService.RegisterAccount(r.Context(), reqData)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": err.Error(),
+		})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "account successfully created",
 	})
