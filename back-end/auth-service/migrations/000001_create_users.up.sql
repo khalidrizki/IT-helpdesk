@@ -1,7 +1,7 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
 
-    name TEXT NOT NULL CHECK (char_length(trim(name)) BETWEEN 2 AND 100), 
+    name TEXT NOT NULL CHECK (char_length(trim(name)) BETWEEN 3 AND 100), 
 
     email TEXT NOT NULL, 
 
