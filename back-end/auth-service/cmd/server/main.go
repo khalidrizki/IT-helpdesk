@@ -1,30 +1,98 @@
+package main
+
 import (
-	"bytes"
-	"encoding/json"
-	"io"
+	"context"
+	"errors"
 	"log"
-	"log/slog"
+	"net"
 	"net/http"
-	"net/mail"
-	"strings"
-	"unicode/utf8"
-	"back-end/auth-service/internal/account"
+	"net/url"
+	"os"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
+
+	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/account"
 )
 
 type server struct {
-    accountService *account.Service
+	accountService *account.Service
 }
 
-func main(){
-	accountSvc := account.NewService()
+func main() {
+	if err := run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+	if err := godotenv.Load(); err != nil {
+		return err
+	}
+
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPort := os.Getenv("DB_PORT")
+	dbName := os.Getenv("DB_NAME")
+
+	if dbUser == "" || dbPassword == "" ||
+		dbHost == "" || dbPort == "" || dbName == "" {
+		return errors.New("database environment variables are incomplete")
+	}
+
+	dbURL := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(dbUser, dbPassword),
+		Host:   net.JoinHostPort(dbHost, dbPort),
+		Path:   dbName,
+	}
+
+	query := dbURL.Query()
+	query.Set("sslmode", "disable")
+	dbURL.RawQuery = query.Encode()
+
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+	defer cancel()
+
+	dbPool, err := pgxpool.New(ctx, dbURL.String())
+	if err != nil {
+		return err
+	}
+	defer dbPool.Close()
+
+	if err := dbPool.Ping(ctx); err != nil {
+		return err
+	}
+
+	log.Println("Successfully connected to PostgreSQL")
+
+	accountRepository := account.NewRepository(dbPool)
+	accountService := account.NewService(accountRepository)
 
 	s := &server{
-		accountService: accountSvc,
+		accountService: accountService,
 	}
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /auth/register", handleRegister)
+	mux.HandleFunc("POST /auth/register", s.handleRegister)
 
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	httpServer := &http.Server{
+		Addr:              ":8080",
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	log.Println("Auth service running on http://localhost:8080")
+
+	err = httpServer.ListenAndServe()
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
 }
