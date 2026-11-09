@@ -48,3 +48,31 @@ func (r *Repository) CreateAccount(
 
 	return err
 }
+
+func (r *Repository) GetAccountByEmail(
+	ctx context.Context,
+	email string,
+) (Account, error) {
+	var account Account
+
+	query := `
+		SELECT id, name, email, department, password_hash, role, is_active
+		FROM users
+		WHERE lower(email) = lower($1)
+	`
+
+	err := r.db.QueryRow(ctx, query, email).Scan(
+		&account.ID,
+		&account.Name,
+		&account.Department,
+		&account.PasswordHash,
+		&account.Role,
+		&account.IsActive,
+	)
+
+	if err != nil {
+		return Account{}, err
+	}
+
+	return account, nil
+}
