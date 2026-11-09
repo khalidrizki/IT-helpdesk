@@ -10,6 +10,11 @@ type RegisterInput struct {
 	ConfirmPassword string `json:"confirm_password"`
 }
 
+type LoginInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type Account struct {
 	ID           string    `json:"id"`
 	Name         string    `json:"name"`
