@@ -63,7 +63,6 @@ async function registerUser() {
     }
 
     isRegistered.value = true
-    alert(result.message)
 
   } catch (error) {
     alert(error instanceof Error ? error.message : 'Something went wrong')
