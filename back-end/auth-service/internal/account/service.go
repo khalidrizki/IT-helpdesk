@@ -8,6 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,11 +29,13 @@ var deptList = map[int]string{
 
 type Service struct {
 	repository *Repository
+	jwtSecret  []byte
 }
 
-func NewService(repository *Repository) *Service {
+func NewService(repository *Repository, jwtSecret string) *Service {
 	return &Service{
 		repository: repository,
+		jwtSecret:  []byte(jwtSecret),
 	}
 }
 
@@ -99,4 +102,40 @@ func (s *Service) RegisterAccount(
 	}
 
 	return nil
+}
+
+func (s *Service) LoginAccount(
+	ctx context.Context,
+	reqData LoginInput,
+) (string, error) {
+	email := strings.TrimSpace(reqData.Email)
+	password := strings.TrimSpace(reqData.Password)
+
+	if email == "" || password == "" {
+		return "", errors.New("email and password are required")
+	}
+
+	account, err := s.repository.GetAccountByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", errors.New("invalid email or password")
+		}
+
+		return "", fmt.Errorf("getting account by email: %w", err)
+	}
+
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(account.PasswordHash),
+		[]byte(password),
+	)
+	if err != nil {
+		return "", errors.New("invalid email or password")
+	}
+
+	token, err := generateJWTToken(account.ID, account.Role, s.jwtSecret)
+	if err != nil {
+		return "", fmt.Errorf("generating JWT token: %w", err)
+	}
+
+	return token, nil
 }

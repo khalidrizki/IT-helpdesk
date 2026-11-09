@@ -72,7 +72,11 @@ func run() error {
 	log.Println("Successfully connected to PostgreSQL")
 
 	accountRepository := account.NewRepository(dbPool)
-	accountService := account.NewService(accountRepository)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return errors.New("JWT_SECRET environment variable is not set")
+	}
+	accountService := account.NewService(accountRepository, jwtSecret)
 
 	s := &server{
 		accountService: accountService,
@@ -81,6 +85,7 @@ func run() error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /auth/register", s.handleRegister)
+	mux.HandleFunc("POST /auth/login", s.handleLogin)
 
 	httpServer := &http.Server{
 		Addr:              ":8080",
