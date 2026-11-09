@@ -64,6 +64,7 @@ func (r *Repository) GetAccountByEmail(
 	err := r.db.QueryRow(ctx, query, email).Scan(
 		&account.ID,
 		&account.Name,
+		&account.Email,
 		&account.Department,
 		&account.PasswordHash,
 		&account.Role,
