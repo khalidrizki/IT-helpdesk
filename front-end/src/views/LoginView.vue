@@ -5,10 +5,10 @@ import { ref } from 'vue'
 const email = ref<string | null>(null)
 const password = ref<string | null>(null)
 
-function login() {
+async function login() {
   const missingFields: string[] = []
 
-  if (!email.value) {
+  if (!email.value?.trim()) {
     missingFields.push('Email')
   }
 
@@ -19,7 +19,33 @@ function login() {
     alert(`Please fill in: ${missingFields.join(', ')}`)
     return
   }
-  router.push('/dashboard')
+
+  try {
+    const response = await fetch('/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        email: email.value?.trim(),
+        password: password.value,
+      }),
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      alert(result.message || 'Login failed. Please check your credentials and try again.')
+      return
+    }
+
+    await router.push('/dashboard')
+  } catch (error) {
+    console.error('Error during login:', error)
+    alert('An error occurred during login. Please try again later.')
+    return
+  }
 }
 
 function moveToForgotPassword() {
