@@ -18,6 +18,7 @@ import (
 
 type server struct {
 	accountService *account.Service
+	secureCookies  bool
 }
 
 func main() {
@@ -80,6 +81,7 @@ func run() error {
 
 	s := &server{
 		accountService: accountService,
+		secureCookies:  os.Getenv("APP_ENV") == "production",
 	}
 
 	mux := http.NewServeMux()
