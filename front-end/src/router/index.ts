@@ -10,6 +10,7 @@ import AccountsView from '@/views/AccountsView.vue'
 import ForgotPasswordView from '@/views/ForgotPasswordView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
 import ForbiddenView from '@/views/ForbiddenView.vue'
+import { useAuth } from '@/stores/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,21 +20,37 @@ const router = createRouter({
       component: MainLayout,
       redirect: '/dashboard',
       children: [
-        { path: '/dashboard', name: 'dashboard', component: DashboardView },
+        {
+          path: '/dashboard',
+          name: 'dashboard',
+          component: DashboardView,
+          meta: {
+            requiresAuth: true,
+          },
+        },
         {
           path: 'tickets',
           name: 'tickets',
           component: TicketsView,
+          meta: {
+            requiresAuth: true,
+          },
         },
         {
           path: 'create',
           name: 'create',
           component: CreateTicketView,
+          meta: {
+            requiresAuth: true,
+          },
         },
         {
           path: 'accounts',
           name: 'accounts',
           component: AccountsView,
+          meta: {
+            requiresAuth: true,
+          },
         },
       ],
     },
@@ -68,6 +85,17 @@ const router = createRouter({
     //   component: () => import('../views/AboutView.vue'),
     // },
   ],
+})
+
+router.beforeEach(async (to) => {
+  const auth = useAuth()
+  if (to.meta.requiresAuth) {
+    const isAuthenticated = await auth.fetchUser()
+    if (!isAuthenticated) {
+      return '/login'
+    }
+  }
+  return true
 })
 
 export default router
