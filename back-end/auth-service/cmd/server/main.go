@@ -14,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/account"
+	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/auth"
 )
 
 type server struct {
@@ -88,6 +89,7 @@ func run() error {
 
 	mux.HandleFunc("POST /auth/register", s.handleRegister)
 	mux.HandleFunc("POST /auth/login", s.handleLogin)
+	mux.Handle("/auth/me", auth.RequireAuth([]byte(jwtSecret))(http.HandlerFunc(s.handleMe)))
 
 	httpServer := &http.Server{
 		Addr:              ":8080",

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/account"
+	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/auth"
 )
 
 func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
@@ -73,4 +74,23 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "login successful",
 	})
+}
+
+func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	userID, ok := auth.UserIDFromContext(r.Context())
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	profile, err := s.accountService.GetUserProfile(r.Context(), userID)
+	if err != nil {
+		http.Error(w, "unable to retrieve user profile", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(profile)
 }
