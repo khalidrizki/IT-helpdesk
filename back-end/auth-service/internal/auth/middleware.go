@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -9,6 +10,15 @@ import (
 type Claims struct {
 	Role string `json:"role"`
 	jwt.RegisteredClaims
+}
+
+type contextKey string
+
+const userIDKey contextKey = "userID"
+
+func UserIDFromContext(ctx context.Context) (string, bool) {
+	userID, ok := ctx.Value(userIDKey).(string)
+	return userID, ok
 }
 
 func RequireAuth(secretKey []byte) func(http.Handler) http.Handler {
@@ -44,8 +54,12 @@ func RequireAuth(secretKey []byte) func(http.Handler) http.Handler {
 				return
 			}
 
+			// 4. Save claims in context
+			ctx := context.WithValue(r.Context(), userIDKey, claims.Subject)
+			r = r.WithContext(ctx)
+
 			// 4. Pass request to next handler
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
