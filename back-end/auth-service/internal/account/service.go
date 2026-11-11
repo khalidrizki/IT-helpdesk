@@ -139,3 +139,28 @@ func (s *Service) LoginAccount(
 
 	return token, nil
 }
+
+func (s *Service) GetUserProfile(
+	ctx context.Context,
+	id string,
+) (UserProfile, error) {
+	// Fetch the account details from the repository without the password hash
+	account, err := s.repository.GetAccountByID(ctx, id)
+	if err != nil {
+		return UserProfile{}, fmt.Errorf("getting user profile: %w", err)
+	}
+
+	if !account.IsActive {
+		return UserProfile{}, errors.New("account is inactive")
+	}
+
+	profile := UserProfile{
+		ID:         account.ID,
+		Name:       account.Name,
+		Email:      account.Email,
+		Department: account.Department,
+		Role:       account.Role,
+	}
+
+	return profile, nil
+}
