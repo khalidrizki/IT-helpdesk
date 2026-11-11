@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import router from '@/router'
+import { useAuth } from '@/stores/auth'
 import { ref } from 'vue'
 
 const email = ref<string | null>(null)
@@ -40,7 +41,11 @@ async function login() {
       return
     }
 
-    await router.push('/dashboard')
+    const auth = useAuth()
+    const isAuthenticated = await auth.fetchUser()
+    if (isAuthenticated) {
+      router.push('/dashboard')
+    }
   } catch (error) {
     console.error('Error during login:', error)
     alert('An error occurred during login. Please try again later.')
