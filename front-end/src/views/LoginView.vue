@@ -42,7 +42,7 @@ async function login() {
     }
 
     const auth = useAuth()
-    const isAuthenticated = await auth.fetchUser()
+    const isAuthenticated = await auth.fetchUser(true)
     if (isAuthenticated) {
       router.push('/dashboard')
     }

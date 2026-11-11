@@ -11,10 +11,16 @@ interface User {
 const user = ref<User | null>(null);
 const isAuthenticated = computed(() => user.value !== null);
 const isLoading = ref(false);
+const isInitialized = ref(false);
 
 export function useAuth(){
-  async function fetchUser(){
+  async function fetchUser(force = false){
+    if (isInitialized.value && !force){
+      return isAuthenticated.value;
+    }
+
     isLoading.value = true;
+
     try {
       const response = await fetch("/api/auth/user", {
         method: "GET",
@@ -23,10 +29,13 @@ export function useAuth(){
 
       if (!response.ok) {
         user.value = null;
+        isInitialized.value = true
         return false;
       }
 
       user.value = await response.json();
+      isInitialized.value = true;
+
       return true
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -41,6 +50,7 @@ export function useAuth(){
     user,
     isAuthenticated,
     isLoading,
+    isInitialized,
     fetchUser
   }
 }
