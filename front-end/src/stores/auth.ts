@@ -22,7 +22,7 @@ export function useAuth(){
     isLoading.value = true;
 
     try {
-      const response = await fetch("/api/auth/user", {
+      const response = await fetch("/auth/me", {
         method: "GET",
         credentials: "include",
       });
@@ -39,7 +39,6 @@ export function useAuth(){
       return true
     } catch (error) {
       console.error("Error fetching user:", error);
-      user.value = null;
       return false
     } finally {
       isLoading.value = false;
