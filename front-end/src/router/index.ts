@@ -57,10 +57,12 @@ const router = createRouter({
     {
       path: '/login',
       component: LoginView,
+      meta: { guestOnly: true },
     },
     {
       path: '/register',
       component: RegisterView,
+      meta: { guestOnly: true },
     },
     {
       path: '/forgot-password',
@@ -89,10 +91,13 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const auth = useAuth()
-  if (to.meta.requiresAuth) {
+  if (to.meta.requiresAuth || to.meta.guestOnly) {
     const isAuthenticated = await auth.fetchUser()
-    if (!isAuthenticated) {
+    if (to.meta.requiresAuth && !isAuthenticated) {
       return '/login'
+    }
+    if (to.meta.guestOnly && isAuthenticated) {
+      return '/dashboard'
     }
   }
   return true
