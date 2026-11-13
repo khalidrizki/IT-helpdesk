@@ -94,3 +94,21 @@ func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(profile)
 }
+func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   s.secureCookies,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+		MaxAge:   -1,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "logout successful",
+	})
+}
