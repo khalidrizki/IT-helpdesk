@@ -2,10 +2,14 @@
 import { ref } from 'vue'
 import SidebarNavItem from './SidebarNavItem.vue'
 import { CircleUserRound } from '@lucide/vue'
+import { useAuth } from '@/stores/auth'
 import router from '@/router/index.ts'
 const props = defineProps<{
   activeUser: string
 }>()
+
+const auth = useAuth()
+
 const navigationItems = [
   {
     label: 'Dashboard',
@@ -21,8 +25,13 @@ const navigationItems = [
   },
 ]
 
-function logout() {
-  router.push('/login')
+async function logout() {
+  try {
+    await auth.logout()
+    await router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
 }
 
 const showLogOut = ref(false)

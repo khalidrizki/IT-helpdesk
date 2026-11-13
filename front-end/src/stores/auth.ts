@@ -45,11 +45,26 @@ export function useAuth(){
     }
   }
 
+  async function logout() {
+  const response = await fetch('/auth/logout', {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to log out');
+  }
+
+  user.value = null;
+  isInitialized.value = true;
+}
+
   return {
     user,
     isAuthenticated,
     isLoading,
     isInitialized,
-    fetchUser
+    fetchUser,
+    logout
   }
 }
