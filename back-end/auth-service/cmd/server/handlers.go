@@ -112,3 +112,14 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		"message": "logout successful",
 	})
 }
+
+func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
+	accounts, err := s.accountService.GetAllAccounts(r.Context())
+	if err != nil {
+		http.Error(w, "failed to get accounts", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(accounts)
+}

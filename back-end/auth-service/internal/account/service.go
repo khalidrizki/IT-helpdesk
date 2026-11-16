@@ -164,3 +164,7 @@ func (s *Service) GetUserProfile(
 
 	return profile, nil
 }
+
+func (s *Service) GetAllAccounts(ctx context.Context) ([]UserProfile, error) {
+	//TODO
+}

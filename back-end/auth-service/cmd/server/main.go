@@ -91,6 +91,8 @@ func run() error {
 	mux.HandleFunc("POST /api/auth/login", s.handleLogin)
 	mux.Handle("GET /api/auth/me", auth.RequireAuth([]byte(jwtSecret))(http.HandlerFunc(s.handleMe)))
 	mux.HandleFunc("POST /api/auth/logout", s.handleLogout)
+	mux.Handle("GET /api/accounts", auth.RequireAuth([]byte(jwtSecret))(auth.RequireRole("admin")(http.HandlerFunc(s.handleGetAllAccounts))))
+
 	httpServer := &http.Server{
 		Addr:              ":8080",
 		Handler:           mux,
