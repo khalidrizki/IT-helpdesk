@@ -87,10 +87,10 @@ func run() error {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("POST /auth/register", s.handleRegister)
-	mux.HandleFunc("POST /auth/login", s.handleLogin)
-	mux.Handle("/auth/me", auth.RequireAuth([]byte(jwtSecret))(http.HandlerFunc(s.handleMe)))
-	mux.Handle("POST /auth/logout", http.HandlerFunc(s.handleLogout))
+	mux.HandleFunc("POST /api/auth/register", s.handleRegister)
+	mux.HandleFunc("POST /api/auth/login", s.handleLogin)
+	mux.Handle("GET /api/auth/me", auth.RequireAuth([]byte(jwtSecret))(http.HandlerFunc(s.handleMe)))
+	mux.HandleFunc("POST /api/auth/logout", s.handleLogout)
 	httpServer := &http.Server{
 		Addr:              ":8080",
 		Handler:           mux,

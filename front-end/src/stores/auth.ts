@@ -22,7 +22,7 @@ export function useAuth(){
     isLoading.value = true;
 
     try {
-      const response = await fetch("/auth/me", {
+      const response = await fetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
       });
@@ -46,7 +46,7 @@ export function useAuth(){
   }
 
   async function logout() {
-  const response = await fetch('/auth/logout', {
+  const response = await fetch('/api/auth/logout', {
     method: 'POST',
     credentials: 'include',
   });
