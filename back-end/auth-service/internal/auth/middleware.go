@@ -14,11 +14,19 @@ type Claims struct {
 
 type contextKey string
 
-const userIDKey contextKey = "userID"
+const (
+	userIDKey   contextKey = "userID"
+	userRoleKey contextKey = "userRole"
+)
 
 func UserIDFromContext(ctx context.Context) (string, bool) {
 	userID, ok := ctx.Value(userIDKey).(string)
 	return userID, ok
+}
+
+func UserRoleFromContext(ctx context.Context) (string, bool) {
+	role, ok := ctx.Value(userRoleKey).(string)
+	return role, ok
 }
 
 func RequireAuth(secretKey []byte) func(http.Handler) http.Handler {
@@ -56,6 +64,7 @@ func RequireAuth(secretKey []byte) func(http.Handler) http.Handler {
 
 			// 4. Save claims in context
 			ctx := context.WithValue(r.Context(), userIDKey, claims.Subject)
+			ctx = context.WithValue(ctx, userRoleKey, claims.Role)
 			r = r.WithContext(ctx)
 
 			// 4. Pass request to next handler
