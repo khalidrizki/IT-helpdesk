@@ -110,7 +110,7 @@ func (r *Repository) GetAccountByID(
 func (r *Repository) GetAllAccounts(ctx context.Context) ([]Account, error) {
 
 	query := `
-		SELECT id, name, email, department, role
+		SELECT id, name, email, department, role, is_active
 		FROM users
 		ORDER BY name ASC
 	`
@@ -131,6 +131,7 @@ func (r *Repository) GetAllAccounts(ctx context.Context) ([]Account, error) {
 			&account.Email,
 			&account.Department,
 			&account.Role,
+			&account.IsActive,
 		)
 		if err != nil {
 			return nil, err

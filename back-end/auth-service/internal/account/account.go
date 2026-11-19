@@ -33,4 +33,5 @@ type UserProfile struct {
 	Email      string `json:"email"`
 	Department string `json:"department"`
 	Role       string `json:"role"`
+	IsActive   bool   `json:"is_active"`
 }
