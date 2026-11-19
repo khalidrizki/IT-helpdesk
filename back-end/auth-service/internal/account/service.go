@@ -160,11 +160,28 @@ func (s *Service) GetUserProfile(
 		Email:      account.Email,
 		Department: account.Department,
 		Role:       account.Role,
+		IsActive:   account.IsActive,
 	}
 
 	return profile, nil
 }
 
 func (s *Service) GetAllAccounts(ctx context.Context) ([]UserProfile, error) {
-	//TODO
+	accounts, err := s.repository.GetAllAccounts(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting all accounts: %w", err)
+	}
+
+	profiles := make([]UserProfile, 0, len(accounts))
+	for _, account := range accounts {
+		profiles = append(profiles, UserProfile{
+			ID:         account.ID,
+			Name:       account.Name,
+			Email:      account.Email,
+			Department: account.Department,
+			Role:       account.Role,
+			IsActive:   account.IsActive,
+		})
+	}
+	return profiles, nil
 }
