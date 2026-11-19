@@ -106,3 +106,41 @@ func (r *Repository) GetAccountByID(
 
 	return account, nil
 }
+
+func (r *Repository) GetAllAccounts(ctx context.Context) ([]Account, error) {
+
+	query := `
+		SELECT id, name, email, department, role
+		FROM users
+		ORDER BY name ASC
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	accounts := []Account{}
+	for rows.Next() {
+		var account Account
+
+		err := rows.Scan(
+			&account.ID,
+			&account.Name,
+			&account.Email,
+			&account.Department,
+			&account.Role,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		accounts = append(accounts, account)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}
