@@ -1,27 +1,6 @@
-package account
+package auth
 
-import (
-	"context"
-
-	"github.com/jackc/pgx/v5/pgxpool"
-)
-
-type Repository struct {
-	db *pgxpool.Pool
-}
-
-func NewRepository(db *pgxpool.Pool) *Repository {
-	return &Repository{
-		db: db,
-	}
-}
-
-type CreateAccountInput struct {
-	Name         string
-	Email        string
-	Department   string
-	PasswordHash string
-}
+import "context"
 
 func (r *Repository) CreateAccount(
 	ctx context.Context,

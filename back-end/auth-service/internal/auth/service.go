@@ -1,4 +1,4 @@
-package account
+package auth
 
 import (
 	"context"
@@ -11,21 +11,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 )
-
-var deptList = map[int]string{
-	1:  "business-development",
-	2:  "customer-service",
-	3:  "finance-accounting",
-	4:  "human-resources",
-	5:  "it",
-	6:  "legal-compliance",
-	7:  "logistics",
-	8:  "management",
-	9:  "marketing",
-	10: "operations",
-	11: "procurement",
-	12: "sales",
-}
 
 type Service struct {
 	repository *Repository
