@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/account"
 	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/auth"
 )
 
@@ -12,7 +11,7 @@ func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-	var reqData account.RegisterInput
+	var reqData auth.RegisterInput
 
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -22,7 +21,7 @@ func (s *server) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := s.accountService.RegisterAccount(r.Context(), reqData)
+	err := s.authService.RegisterAccount(r.Context(), reqData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -41,7 +40,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-	var reqData account.LoginInput
+	var reqData auth.LoginInput
 
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -51,7 +50,7 @@ func (s *server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := s.accountService.LoginAccount(r.Context(), reqData)
+	token, err := s.authService.LoginAccount(r.Context(), reqData)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(map[string]string{
@@ -85,7 +84,7 @@ func (s *server) handleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := s.accountService.GetUserProfile(r.Context(), userID)
+	profile, err := s.authService.GetUserProfile(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "unable to retrieve user profile", http.StatusInternalServerError)
 		return
@@ -114,7 +113,7 @@ func (s *server) handleLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handleGetAllAccounts(w http.ResponseWriter, r *http.Request) {
-	accounts, err := s.accountService.GetAllAccounts(r.Context())
+	accounts, err := s.authService.GetAllAccounts(r.Context())
 	if err != nil {
 		http.Error(w, "failed to get accounts", http.StatusInternalServerError)
 		return

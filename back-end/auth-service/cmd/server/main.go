@@ -13,13 +13,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 
-	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/account"
+	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/accountsclient"
 	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/auth"
 )
 
 type server struct {
-	accountService *account.Service
-	secureCookies  bool
+	authService   *auth.Service
+	secureCookies bool
 }
 
 func main() {
@@ -73,16 +73,26 @@ func run() error {
 
 	log.Println("Successfully connected to PostgreSQL")
 
-	accountRepository := account.NewRepository(dbPool)
+	authRepository := auth.NewRepository(dbPool)
+	accountsURL := os.Getenv("ACCOUNTS_SERVICE_URL")
+	if accountsURL == "" {
+		return errors.New("ACCOUNTS_SERVICE_UR is not set")
+	}
+	accountsClient := accountsclient.NewClient(accountsURL)
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		return errors.New("JWT_SECRET environment variable is not set")
 	}
-	accountService := account.NewService(accountRepository, jwtSecret)
+
+	authService := auth.NewService(
+		authRepository,
+		accountsClient,
+		jwtSecret,
+	)
 
 	s := &server{
-		accountService: accountService,
-		secureCookies:  os.Getenv("APP_ENV") == "production",
+		authService:   authService,
+		secureCookies: os.Getenv("APP_ENV") == "production",
 	}
 
 	mux := http.NewServeMux()
