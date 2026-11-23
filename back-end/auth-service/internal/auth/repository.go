@@ -1,27 +1,45 @@
 package auth
 
-import "context"
+import (
+	"context"
 
-func (r *Repository) CreateAccount(
+	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+type Repository struct {
+	db *pgxpool.Pool
+}
+
+func NewRepository(db *pgxpool.Pool) *Repository {
+	return &Repository{
+		db: db,
+	}
+}
+
+type CreateCredentialInput struct {
+	UserID       string
+	Email        string
+	PasswordHash string
+}
+
+func (r *Repository) CreateCredential(
 	ctx context.Context,
-	input CreateAccountInput,
+	input CreateCredentialInput,
 ) error {
 	query := `
-        INSERT INTO users (
-            name,
-            email,
-            department,
-            password_hash
+        INSERT INTO credentials (
+            user_id, 
+			email, 
+			password_hash
         )
-        VALUES ($1, $2, $3, $4)
+        VALUES ($1, $2, $3)
     `
 
 	_, err := r.db.Exec(
 		ctx,
 		query,
-		input.Name,
+		input.UserID,
 		input.Email,
-		input.Department,
 		input.PasswordHash,
 	)
 
