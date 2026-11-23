@@ -6,38 +6,39 @@ import (
 	"fmt"
 	"net/mail"
 	"strings"
-	"unicode/utf8"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/khalidrizki/IT-helpdesk/back-end/auth-service/internal/accountsclient"
 )
 
 type Service struct {
-	repository *Repository
-	jwtSecret  []byte
+	repository     *Repository
+	accountsClient *accountsclient.Client
+	jwtSecret      []byte
 }
 
-func NewService(repository *Repository, jwtSecret string) *Service {
+func NewService(
+	repository *Repository,
+	accountsClient *accountsclient.Client,
+	jwtSecret string,
+) *Service {
 	return &Service{
-		repository: repository,
-		jwtSecret:  []byte(jwtSecret),
+		repository:     repository,
+		accountsClient: accountsClient,
+		jwtSecret:      []byte(jwtSecret),
 	}
 }
 
 func (s *Service) RegisterAccount(
 	ctx context.Context,
-	reqData RegisterInput,
+	input RegisterInput,
 ) error {
 	var validationErrors []string
 
-	name := strings.TrimSpace(reqData.Name)
-	email := strings.TrimSpace(reqData.Email)
-
-	if name == "" {
-		validationErrors = append(validationErrors, "name is required")
-	} else if utf8.RuneCountInString(name) < 3 {
-		validationErrors = append(validationErrors, "name must contain at least 3 characters")
-	}
+	email := strings.TrimSpace(input.Email)
 
 	if email == "" {
 		validationErrors = append(validationErrors, "email is required")
@@ -48,20 +49,15 @@ func (s *Service) RegisterAccount(
 		}
 	}
 
-	department, exists := deptList[reqData.DepartmentID]
-	if !exists {
-		validationErrors = append(validationErrors, "invalid department")
-	}
-
-	if strings.TrimSpace(reqData.Password) == "" {
+	if strings.TrimSpace(input.Password) == "" {
 		validationErrors = append(validationErrors, "password is required")
 	}
 
-	if strings.TrimSpace(reqData.ConfirmPassword) == "" {
+	if strings.TrimSpace(input.ConfirmPassword) == "" {
 		validationErrors = append(validationErrors, "confirm password is required")
 	}
 
-	if reqData.Password != reqData.ConfirmPassword {
+	if input.Password != input.ConfirmPassword {
 		validationErrors = append(validationErrors, "passwords do not match")
 	}
 
@@ -70,22 +66,42 @@ func (s *Service) RegisterAccount(
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword(
-		[]byte(reqData.Password),
+		[]byte(input.Password),
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
 		return fmt.Errorf("hashing password: %w", err)
 	}
-	err = s.repository.CreateAccount(ctx, CreateAccountInput{
-		Name:         name,
-		Email:        email,
-		Department:   department,
-		PasswordHash: string(hashedPassword),
-	})
+
+	userID := uuid.NewString()
+
+	// minta accounts service membuat profil (pakai s.accountsClient.CreateAccount)
+	err = s.accountsClient.CreateAccount(
+		ctx,
+		accountsclient.CreateAccountInput{
+			ID:           userID,
+			Name:         input.Name,
+			DepartmentID: input.DepartmentID,
+		},
+	)
+	// error handling (fmt "creating account profile: %w")
 	if err != nil {
-		return fmt.Errorf("creating account: %w", err)
+		return fmt.Errorf("creating account profile: %w", err)
 	}
 
+	// simpan credential di database auth service (pakai s.repository.CreateCredential)
+	err = s.repository.CreateCredential(
+		ctx,
+		CreateCredentialInput{
+			UserID:       userID,
+			Email:        email,
+			PasswordHash: string(hashedPassword),
+		},
+	)
+	// error handling (fmt "creating credential: %w")
+	if err != nil {
+		return fmt.Errorf("creating credential: %w", err)
+	}
 	return nil
 }
 
